@@ -24,43 +24,22 @@ $contents = readHttpLikeInput();
 function parseTcpStringAsHttpRequest($string) {
     $res = array();
     $arr = explode("\n", $string);
-//     for($x = 0; $x < count($arr); $x++) {
-//   echo $arr[$x];
-//   echo "\n";
-// }
     
     $res["method"] = explode(" ", $arr[0])[0];
     $res["uri"] = explode(" ", $arr[0])[1];
     $body_index = array_search("", $arr) + 1;
-    // echo $body_index . "\n";
     $res["body"] = $arr[$body_index];
     for($x = 0; $x < count($arr); $x++) {
         global $body_index;
-    if ($x == 0 || $x == 1 || $x == $body_index || $x == $body_index - 1) {
-        continue;
+        if ($x == 0 || $x == 1 || $x == $body_index || $x == $body_index - 1) {
+            continue;
+        }
+        $header_arr = explode(":", $arr[$x]);
+        if (count($header_arr) > 0 && array_key_exists(0, $header_arr) && array_key_exists(1, $header_arr)) {
+            $res["headers"][$header_arr[0]] = $header_arr[1];
+        }
     }
-    $header_arr = explode(":", $arr[$x]);
-    if (count($header_arr) > 0 && array_key_exists(0, $header_arr) && array_key_exists(1, $header_arr)) {
-        // echo $header_arr[0] . "\n";
-        // echo $header_arr[1] . "\n";
-        $res[$header_arr[0]] = $header_arr[1];
-    }
-}
-    // $string = str_replace("\r\n", "\n", $string);
-   
-    
-//     foreach($res as $x => $x_value) {
-//   echo "Key=" . $x . ", Value=" . $x_value;
-//   echo "\n";
-// }
-
     return $res;
-    // return array(
-    //     "method" => ,
-    //     "uri" => ,
-    //     "headers" => ,
-    //     "body" => ,
-    // );
 }
 
 $http = parseTcpStringAsHttpRequest($contents);
