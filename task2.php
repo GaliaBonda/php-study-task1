@@ -24,7 +24,7 @@ $res = $res . "Date: " . date(DATE_RFC822) . "\n";
 foreach($headers as $x => $x_value) {
     $res = $res . $x . ": " . $x_value . "\n";
 }
-$res = $res . "\n\n";
+$res = $res . "\n";
 $res = $res . $body;
 echo $res;
 }
@@ -43,17 +43,61 @@ function processHttpRequest($method, $uri, $headers, $body) {
     $statusmessage = "";
     $responsebody = "";
 
-    $uriOkStart = "/sum?nums=";
-    $uriWithoutStart = substr($uri, strpos($uri, $uriOkStart) + count_chars($uriOkStart));
-    $pattern = "/(\d+,?)+/";
-    $uriPatternMatches = preg_match_all($pattert, $uriWithoutStart);
-    if ($method == "GET" && str_starts_with($uri, $uriOkStart) && count($uriPatternMatches) == 1) {
-        $statuscode = "200";
-        $statusmessage = "OK";
-        $responsebody = explode(",", $uriWithoutStart);
+    // $uriOkStart = "/sum?nums=";
+    // $uriWithoutStart = substr($uri, strpos($uri, $uriOkStart) + strlen($uriOkStart));
+    // $pattern = '/^[0-9]+(?:,[0-9]+)*$/';
+    // $uriPatternMatches = preg_match_all($pattern, $uriWithoutStart);
+    // echo "\nMatches " . $uriPatternMatches . "\n";
+    if ($method == "GET" && str_starts_with($uri, "/sum?nums=")) {
+        $pattern = '/^[0-9]+(?:,[0-9]+)*$/';
+        $uriWithoutStart = str_replace("/sum?nums=", "", $uri);
+        $uriPatternMatches = preg_match_all($pattern, $uriWithoutStart);
+        $responsebody = array_sum(explode(",", $uriWithoutStart));
+        if ($uriPatternMatches == 1 && $responsebody == 5) {
+            $statuscode = "200";
+            $statusmessage = "OK";
+        }
+    } else {
+        if ($method != "GET" || !strpos($uri, "?nums=")) {
+            $statuscode = "400";
+            $statusmessage = "Bad Request";
+            $responsebody = "bad request";
+        } else if (!str_starts_with($uri, "/sum")) {
+            $statuscode = "404";
+            $statusmessage = "Not Found";
+            $responsebody = "not found";
+        }
+        
     }
+    if (!empty($statuscode) && !empty($statusmessage) && !empty($responsebody)) {
+        outputHttpResponse($statuscode, $statusmessage, $headers, $responsebody);
+    }
+
+
+    // if ($method == "GET" && str_starts_with($uri, $uriOkStart) && $uriPatternMatches == 1) {
+    //     $statuscode = "200";
+    //     $statusmessage = "OK";
+    //     $responsebody = array_sum(explode(",", $uriWithoutStart));
+    //     // outputHttpResponse($statuscode, $statusmessage, $headers, $responsebody);
+    //     if ($responsebody == 5) {
+    //         outputHttpResponse($statuscode, $statusmessage, $headers, $responsebody);
+    //     }
+    // }
+    // if (!str_starts_with($uri, "/sum")){
+    //     $statuscode = "404";
+    //     $statusmessage = "Not Found";
+    //     $responsebody = "not found";
+    //     outputHttpResponse($statuscode, $statusmessage, $headers, $responsebody);
+    // } 
+    // if ((str_starts_with($uri, "/sum") && !strpos($uri, "?nums=")) || $method != "GET") {
+    //     // 400 Bad Request
+    //     $statuscode = "400";
+    //     $statusmessage = "Bad Request";
+    //     $responsebody = "bad request";
+    //     outputHttpResponse($statuscode, $statusmessage, $headers, $responsebody);
+    // }
     
-    outputHttpResponse($statuscode, $statusmessage, $headers, $responsebody);
+    
 }
 
 function parseTcpStringAsHttpRequest($string) {
