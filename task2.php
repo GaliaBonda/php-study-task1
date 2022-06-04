@@ -21,8 +21,10 @@ function outputHttpResponse($statuscode, $statusmessage, $headers, $body) {
     
 $res = "HTTP/1.1" . " ". $statuscode . " " . $statusmessage . "\n";
 $res = $res . "Date: " . date(DATE_RFC822) . "\n";
-foreach($headers as $x => $x_value) {
+if (is_array($headers)) {
+  foreach($headers as $x => $x_value) {
     $res = $res . $x . ": " . $x_value . "\n";
+}  
 }
 $res = $res . "\n";
 $res = $res . $body;
@@ -52,10 +54,11 @@ function processHttpRequest($method, $uri, $headers, $body) {
         $pattern = '/^[0-9]+(?:,[0-9]+)*$/';
         $uriWithoutStart = str_replace("/sum?nums=", "", $uri);
         $uriPatternMatches = preg_match_all($pattern, $uriWithoutStart);
-        $responsebody = array_sum(explode(",", $uriWithoutStart));
-        if ($uriPatternMatches == 1 && $responsebody == 5) {
+        
+        if ($uriPatternMatches == 1) {
             $statuscode = "200";
             $statusmessage = "OK";
+            $responsebody = array_sum(explode(",", $uriWithoutStart));
         }
     } else {
         if ($method != "GET" || !strpos($uri, "?nums=")) {
@@ -101,11 +104,11 @@ function processHttpRequest($method, $uri, $headers, $body) {
 }
 
 function parseTcpStringAsHttpRequest($string) {
-    $res = array();
+    $res = array("method" => "", "uri" => "", "headers" => "", "body" => "");
     $arr = explode("\n", $string);
-    
-    $res["method"] = explode(" ", $arr[0])[0];
-    $res["uri"] = explode(" ", $arr[0])[1];
+    // echo "\n" . explode(" ", $arr[0])[0] . " " . explode(" ", $arr[0])[1];
+    $res["method"] = count(explode(" ", $arr[0])) > 0 ? explode(" ", $arr[0])[0] : "";
+    $res["uri"] = count(explode(" ", $arr[0])) > 1 ? explode(" ", $arr[0])[1] : "";
     $body_index = array_search("", $arr) + 1;
     $res["body"] = $arr[$body_index];
     for($x = 0; $x < count($arr); $x++) {
