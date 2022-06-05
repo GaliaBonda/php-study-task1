@@ -1,3 +1,5 @@
 {
-    "php.validate.executablePath": "c:/php/php.exe"
+    "php.validate.executablePath": "c:/php/php.exe",
+    "phpformatter.pharPath": "/usr/local/bin/php-cs-fixer",
+    "phpformatter.composer": false
 }
