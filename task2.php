@@ -44,6 +44,11 @@ function processHttpRequest($method, $uri, $headers, $body) {
     $statuscode = "";
     $statusmessage = "";
     $responsebody = "";
+    $headers = array("Server" => "Apache/2.2.14 (Win32)", 
+// Content-Length: 1
+"Connection" => "Closed",
+"Content-Type" => "text/html; charset=utf-8"
+);
 
     // $uriOkStart = "/sum?nums=";
     // $uriWithoutStart = substr($uri, strpos($uri, $uriOkStart) + strlen($uriOkStart));
@@ -72,6 +77,7 @@ function processHttpRequest($method, $uri, $headers, $body) {
         }
         
     }
+    $headers["Content-Length"] = strlen($responsebody);
     if (!empty($statuscode) && !empty($statusmessage) && !empty($responsebody)) {
         outputHttpResponse($statuscode, $statusmessage, $headers, $responsebody);
     }
@@ -104,7 +110,7 @@ function processHttpRequest($method, $uri, $headers, $body) {
 }
 
 function parseTcpStringAsHttpRequest($string) {
-    $res = array("method" => "", "uri" => "", "headers" => "", "body" => "");
+    $res = array("method" => "", "uri" => "", "headers" => array(), "body" => "");
     $arr = explode("\n", $string);
     // echo "\n" . explode(" ", $arr[0])[0] . " " . explode(" ", $arr[0])[1];
     $res["method"] = count(explode(" ", $arr[0])) > 0 ? explode(" ", $arr[0])[0] : "";
@@ -113,12 +119,14 @@ function parseTcpStringAsHttpRequest($string) {
     $res["body"] = $arr[$body_index];
     for($x = 0; $x < count($arr); $x++) {
         global $body_index;
-        if ($x == 0 || $x == 1 || $x == $body_index || $x == $body_index - 1) {
+        if ($x == 0 || $x == $body_index || $x == $body_index - 1) {
             continue;
         }
         $header_arr = explode(":", $arr[$x]);
         if (count($header_arr) > 0 && array_key_exists(0, $header_arr) && array_key_exists(1, $header_arr)) {
+            echo "\n" . $header_arr[0] . " " . $header_arr[1] . "\n";
             $res["headers"][$header_arr[0]] = $header_arr[1];
+            
         }
     }
     return $res;
