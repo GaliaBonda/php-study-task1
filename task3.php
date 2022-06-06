@@ -59,7 +59,8 @@ function processHttpRequest($method, $uri, $headers, $body) {
     // echo "\n body arr " . $body_arr[0] . " " . $body_arr[1] . "\n";
     $userAuthentication = array("login" => explode("=", $body_arr[0])[1], "password" => explode("=", $body_arr[1])[1]);
     echo "\n" . $userAuthentication["login"] . " " . $userAuthentication["password"] . "\n";
-    echo "\n" . file_get_contents(__DIR__ . "\assets\password.txt", false) . "\n";
+    
+    echo "\n" . file_get_contents("C:\OpenServer\domains\myfirstphp.com\assets\passwords.txt") . "\n";
     $responseHeaders = array("Server" => "Apache/2.2.14 (Win32)", 
     // Content-Length: 1
     "Connection" => "Closed",
