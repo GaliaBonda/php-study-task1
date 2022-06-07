@@ -43,11 +43,12 @@ echo $res;
 function processHttpRequest($method, $uri, $headers, $body) {
     $statuscode = "200";
     $statusmessage = "OK";
-    $responsebody = '<h1 style="color:green">FOUND</h1>';
+    $responsebody = '<h1 style="color:red">NOT FOUND</h1>';
+    // $responsebody = "bla";
     
     if ($method != "POST" || $uri != "/api/checkLoginAndPassword" || 
     $headers["Content-Type"] != "application/x-www-form-urlencoded") {
-        echo "\n method " . $method . " " . $uri . " " . $headers["Content-Type"] . "\n";
+        // echo "\n method " . $method . " " . $uri . " " . $headers["Content-Type"] . "\n";
         $statuscode = "400";
     $statusmessage = "Bad Request";
     $responsebody = 'bad request';
@@ -56,17 +57,40 @@ function processHttpRequest($method, $uri, $headers, $body) {
     $password = "";
     // echo "\n body " . $body . "\n";
     $body_arr = explode("&", $body);
-    // echo "\n body arr " . $body_arr[0] . " " . $body_arr[1] . "\n";
+    // echo "\n  body arr " . $body_arr[0] . " " . $body_arr[1] . "\n";
     $userAuthentication = array("login" => explode("=", $body_arr[0])[1], "password" => explode("=", $body_arr[1])[1]);
-    echo "\n" . $userAuthentication["login"] . " " . $userAuthentication["password"] . "\n";
-    
-    echo "\n" . file_get_contents("C:\OpenServer\domains\myfirstphp.com\assets\passwords.txt") . "\n";
+    // echo "\n login and pass " . $userAuthentication["login"] . " " . $userAuthentication["password"] . "\n";
+    $savedAuth = explode(PHP_EOL, file_get_contents("C:\OpenServer\domains\myfirstphp.com\assets\passwords.txt"));
+    // echo "\n" . "savedAuth " . " " . $savedAuth[0] . "; " . $savedAuth[1] . "; " . $savedAuth[2] . "; " . $savedAuth[3] . "\n";
+    $authConfirmed = false;
+    // $userAuthentication["login"] = str_replace("\n", "", $userAuthentication["login"]);
+    // $userAuthentication["password"] = str_replace("\n", "", $userAuthentication["password"]);
+    for ($y = 0; $y < count($savedAuth); $y++) {
+        // echo $savedAuth[$y];
+        // echo $savedAuth[$y];
+        // echo $userAuthentication["login"];
+        // echo $userAuthentication["password"];
+        // $savedAuth[$y] = str_replace("\n", "", $savedAuth[$y]);
+        // echo "\n from the loop  " . $userAuthentication["login"] . ":" . $userAuthentication["password"] . " " . $savedAuth[$y] . "\n";
+
+        $userAuthPair = $userAuthentication["login"] . ":" . $userAuthentication["password"];
+        // echo "\n" . $userAuthPair;
+        if (trim($userAuthPair) == trim($savedAuth[$y])) {
+            $authConfirmed = true;
+            $responsebody = '<h1 style="color:green">FOUND</h1>';
+            // echo PHP_EOL . "$authConfirmed" . " Auth confirmed" . PHP_EOL;
+        }
+    }
+    // echo "\nAuthethification " . json_encode($authConfirmed) . "\n";
+    // var_dump($authConfirmed);
+    // echo "\n" . file_get_contents("C:\OpenServer\domains\myfirstphp.com\assets\passwords.txt") . "\n";
+    // echo "\n" . $authConfirmed . " Auth " . "\n";
     $responseHeaders = array("Server" => "Apache/2.2.14 (Win32)", 
     // Content-Length: 1
     "Connection" => "Closed",
     "Content-Type" => $headers["Content-Type"]    
     );
-    outputHttpResponse($statuscode, $statusmessage, $responseHeaders, $body);
+    outputHttpResponse($statuscode, $statusmessage, $responseHeaders, $responsebody);
     
     
 }
